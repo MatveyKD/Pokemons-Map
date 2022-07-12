@@ -47,7 +47,7 @@ def show_all_pokemons(request):
         )
 
     pokemons_on_page = []
-    pokemons = pokemon.objects.all()
+    pokemons = Pokemon.objects.all()
     for pokemon in pokemons:
         print(request.build_absolute_uri(f"media/{pokemon.image}"))
         print(pokemon.image)
