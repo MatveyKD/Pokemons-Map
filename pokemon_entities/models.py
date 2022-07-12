@@ -1,105 +1,81 @@
-import folium
-import json
-import requests
-import datetime
+from django.db import models
 
-
-
-from django.http import HttpResponseNotFound
-from django.core.exceptions import ObjectDoesNotExist
-from django.shortcuts import render
-from .models import PokemonEntity, Pokemon
-
-
-MOSCOW_CENTER = [55.751244, 37.618423]
-DEFAULT_IMAGE_URL = (
-    'https://vignette.wikia.nocookie.net/pokemon/images/6/6e/%21.png/revision'
-    '/latest/fixed-aspect-ratio-down/width/240/height/240?cb=20130525215832'
-    '&fill=transparent'
-)
-
-
-def add_pokemon(folium_map, lat, lon, image_url=DEFAULT_IMAGE_URL):
-    icon = folium.features.CustomIcon(
-        image_url,
-        icon_size=(50, 50),
+class Pokemon(models.Model):
+    name = models.CharField(
+        max_length=20,
+        verbose_name="pokemon name"
     )
-    folium.Marker(
-        [lat, lon],
-        # Warning! `tooltip` attribute is disabled intentionally
-        # to fix strange folium cyrillic models.IntegerFieldencoding bug
-        icon=icon,
-    ).add_to(folium_map)
-
-
-def show_all_pokemons(request):
-    pokemons_entities = PokemonEntity.objects.filter(
-        disappeared_at__gt = datetime.datetime.now(),
-        appeared_at__lt = datetime.datetime.now()
+    image = models.ImageField(
+        verbose_name="pokemon image",
+        default="./media/default.jpg"
+    )
+    description = models.TextField(
+        blank=True,
+        verbose_name="pokemon description"
+    )
+    name_en = models.CharField(
+        max_length=20,
+        blank=True,
+        verbose_name="pokemon name_en"
+    )
+    name_jp = models.CharField(
+        max_length=20,
+        blank=True,
+        verbose_name="pokemon name_jp"
     )
 
-    folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
-    for pokemon_entity in pokemons_entities:
-        add_pokemon(
-            folium_map, pokemon_entity.lat,
-            pokemon_entity.lon,
-            request.build_absolute_uri(f"media/{pokemon_entity.pokemon.image}")
-        )
+    prev_evolution = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="next_evolutions",
+        verbose_name="pokemon previous evolution"
+    )
 
-    pokemons_on_page = []
-    pokemons = Pokemon.objects.all()
-    for pokemon in pokemons:
-        print(request.build_absolute_uri(f"media/{pokemon.image}"))
-        print(pokemon.image)
-        pokemons_on_page.append({
-            'pokemon_id': pokemon.id,
-            'img_url': request.build_absolute_uri(f"media/{pokemon.image}"),
-            'title_ru': pokemon.name
-        })
+    def __str__(self):
+        return self.name
 
-    return render(request, 'mainpage.html', context={
-        'map': folium_map._repr_html_(),
-        'pokemons': pokemons_on_page,
-    })
+class PokemonEntity(models.Model):
+    pokemon = models.ForeignKey(
+        Pokemon,
+        on_delete=models.CASCADE,
+        verbose_name="Pokemon"
+    )
+    lat = models.FloatField(verbose_name="Latitute")
+    lon = models.FloatField(verbose_name="Lontitute")
 
+    appeared_at = models.DateTimeField(
+        null=True,
+        verbose_name="appeared at"
+    )
+    disappeared_at = models.DateTimeField(
+        null=True,
+        verbose_name="disappeared at"
+    )
 
-def show_pokemon(request, pokemon_id):
-    try:
-        pokemon = Pokemon.objects.get(id=pokemon_id)
-    except ObjectDoesNotExist:
-        return HttpResponseNotFound('<h1>Такой покемон не найден</h1>')
-
-    folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
-    for pokemon_entity in PokemonEntity.objects.filter(pokemon=pokemon):
-        print(request.build_absolute_uri(pokemon.image.url))
-        add_pokemon(
-            folium_map, pokemon_entity.lat,
-            pokemon_entity.lon,
-            request.build_absolute_uri(pokemon.image.url)
-        )
-
-    pokemon_params = {
-        "pokemon_id": 1,
-        "title_ru": pokemon.name,
-        "title_en": pokemon.name_en,
-        "title_jp": pokemon.name_jp,
-        "description": pokemon.description,
-        "img_url": request.build_absolute_uri(pokemon.image.url)
-    }
-
-    if pokemon.prev_evolution:
-        pokemon_params["previous_evolution"] = {
-            "title_ru": pokemon.prev_evolution.name,
-            "pokemon_id": pokemon.prev_evolution.id,
-            "img_url": request.build_absolute_uri(pokemon.prev_evolution.image.url)
-        }
-    if pokemon.next_evolutions.count():
-        pokemon_params["next_evolution"] = {
-            "title_ru": pokemon.next_evolutions.all()[0].name,
-            "pokemon_id": pokemon.next_evolutions.all()[0].id,
-            "img_url": request.build_absolute_uri(pokemon.next_evolutions.all()[0].image.url)
-        }
-
-    return render(request, 'pokemon.html', context={
-        'map': folium_map._repr_html_(), 'pokemon': pokemon_params
-    })
+    level = models.IntegerField(
+        null=True,
+        blank=True,
+        verbose_name="pokemon level"
+    )
+    health = models.IntegerField(
+        null=True,
+        blank=True,
+        verbose_name="pokemon health"
+    )
+    attack = models.IntegerField(
+        null=True,
+        blank=True,
+        verbose_name="pokemon attack"
+    )
+    defens = models.IntegerField(
+        null=True,
+        blank=True,
+        verbose_name="pokemon defens"
+    )
+    endurance = models.IntegerField(
+        null=True,
+        blank=True,
+        verbose_name="pokemon endurance"
+    )
