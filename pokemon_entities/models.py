@@ -40,7 +40,7 @@ class PokemonEntity(models.Model):
     pokemon = models.ForeignKey(
         Pokemon,
         on_delete=models.CASCADE,
-        verbose_name="pokemon"
+        verbose_name="Pokemon"
     )
     lat = models.FloatField(verbose_name="Latitute")
     lon = models.FloatField(verbose_name="Lontitute")
@@ -69,10 +69,10 @@ class PokemonEntity(models.Model):
         blank=True,
         verbose_name="pokemon attack"
     )
-    deffend = models.IntegerField(
+    defens = models.IntegerField(
         null=True,
         blank=True,
-        verbose_name="pokemon defend"
+        verbose_name="pokemon defens"
     )
     endurance = models.IntegerField(
         null=True,
