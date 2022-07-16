@@ -8,7 +8,6 @@ class Pokemon(models.Model):
     )
     image = models.ImageField(
         verbose_name="pokemon image",
-        default="./media/default.jpg"
     )
     description = models.TextField(
         blank=True,
