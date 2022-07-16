@@ -4,7 +4,6 @@ import requests
 import datetime
 
 
-
 from django.http import HttpResponseNotFound
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
@@ -34,8 +33,8 @@ def add_pokemon(folium_map, lat, lon, image_url=DEFAULT_IMAGE_URL):
 
 def show_all_pokemons(request):
     pokemons_entities = PokemonEntity.objects.filter(
-        disappeared_at__gt = datetime.datetime.now(),
-        appeared_at__lt = datetime.datetime.now()
+        disappeared_at__gt=datetime.datetime.now(),
+        appeared_at__lt=datetime.datetime.now()
     )
 
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
@@ -88,13 +87,17 @@ def show_pokemon(request, pokemon_id):
         pokemon_params["previous_evolution"] = {
             "title_ru": pokemon.prev_evolution.name,
             "pokemon_id": pokemon.prev_evolution.id,
-            "img_url": request.build_absolute_uri(pokemon.prev_evolution.image.url)
+            "img_url": request.build_absolute_uri(
+                pokemon.prev_evolution.image.url
+            )
         }
     if pokemon.next_evolutions.count():
         pokemon_params["next_evolution"] = {
             "title_ru": pokemon.next_evolutions.all()[0].name,
             "pokemon_id": pokemon.next_evolutions.all()[0].id,
-            "img_url": request.build_absolute_uri(pokemon.next_evolutions.all()[0].image.url)
+            "img_url": request.build_absolute_uri(
+                pokemon.next_evolutions.all()[0].image.url
+            )
         }
 
     return render(request, 'pokemon.html', context={

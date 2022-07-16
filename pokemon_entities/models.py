@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class Pokemon(models.Model):
     name = models.CharField(
         max_length=20,
@@ -35,6 +36,7 @@ class Pokemon(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class PokemonEntity(models.Model):
     pokemon = models.ForeignKey(
